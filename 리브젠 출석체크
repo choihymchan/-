@@ -1,1 +1,75 @@
 npm install react-calendar qrcode.react
+import React, { useState } from 'react';
+import Calendar from 'react-calendar';
+import 'react-calendar/dist/Calendar.css';
+import QRCode from 'qrcode.react';
+
+const AttendanceCheck = () => {
+  const [name, setName] = useState('');
+  const [attendance, setAttendance] = useState([]); // 출석한 날짜 목록 (YYYY-MM-DD 형식)
+  const [selectedDate, setSelectedDate] = useState(new Date());
+
+  // 출석 체크 함수
+  const handleCheckIn = () => {
+    if (!name.trim()) {
+      alert('이름을 입력해주세요!');
+      return;
+    }
+    const today = new Date().toISOString().slice(0, 10);
+    if (!attendance.includes(today)) {
+      setAttendance([...attendance, today]);
+    } else {
+      alert('오늘은 이미 출석하셨습니다.');
+    }
+    // 백엔드 연동 시 여기서 API 호출
+  };
+
+  return (
+    <div className="container mx-auto p-4">
+      <h1 className="text-2xl font-bold text-center mb-4">출석 체크 시스템</h1>
+      
+      {/* QR코드 및 이름 입력 */}
+      <div className="flex flex-col items-center space-y-4">
+        {/* QR코드: 출석 체크 페이지 URL 설정 */}
+        <QRCode value="https://yourattendancepage.com" size={128} />
+
+        <input 
+          type="text"
+          placeholder="이름을 입력하세요"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          className="border p-2 rounded"
+        />
+
+        <button 
+          onClick={handleCheckIn} 
+          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+        >
+          출석 체크
+        </button>
+      </div>
+
+      {/* 달력 UI */}
+      <div className="mt-8">
+        <Calendar 
+          value={selectedDate}
+          onChange={setSelectedDate}
+          tileContent={({ date, view }) => {
+            const dateString = date.toISOString().slice(0, 10);
+            // 해당 날짜가 출석 목록에 있으면 도장 표시
+            if (attendance.includes(dateString)) {
+              return (
+                <div className="flex justify-center items-center">
+                  <span className="text-xl text-green-500">✔</span>
+                </div>
+              );
+            }
+            return null;
+          }}
+        />
+      </div>
+    </div>
+  );
+};
+
+export default AttendanceCheck;
